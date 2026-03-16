@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>RESITER - Gestor de Hojas de Seguridad PPL</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdef5 100%);
+            min-height: 100vh;
+        }
+
+        /* Barra de navegación */
+        .navbar {
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 2px 15px rgba(0,169,224,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 3px solid #00a9e0;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-circle {
+            width: 45px;
+            height: 45px;
+            background: #00a9e0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .company-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #00a9e0;
+        }
+
+        .app-name {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #333;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .nav-menu a:hover {
+            background: #e3f2fd;
+            color: #00a9e0;
+        }
+
+        .nav-menu a.active {
+            background: #00a9e0;
+            color: white;
+        }
+
+        /* Contenedor principal */
+        .main-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* Secciones */
+        .section {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 20px rgba(0,169,224,0.1);
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #e3f2fd;
+            padding-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .section-title {
+            color: #00a9e0;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Botones */
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            background: #00a9e0;
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn:hover {
+            background: #0095c7;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,169,224,0.3);
+        }
+
+        .btn-outline {
+            background: white;
+            border: 2px solid #00a9e0;
+            color: #00a9e0;
+        }
+
+        .btn-outline:hover {
+            background: #00a9e0;
+            color: white;
+        }
+
+        .btn-pdf {
+            background: #28a745;
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-pdf:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40,167,69,0.3);
+        }
+
+        /* Tablas */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid #e3f2fd;
+            margin-bottom: 1.5rem;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .material-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1200px;
+        }
+
+        .material-table th {
+            background: #00a9e0;
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 500;
+            font-size: 0.9rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .material-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e3f2fd;
+            font-size: 0.9rem;
+        }
+
+        .material-table tr:hover {
+            background: #f5fbff;
+        }
+
+        /* Badges de peligrosidad */
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 20px;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin: 0.1rem;
+            white-space: nowrap;
+        }
+
+        .badge-corrosivo { background: #dc3545; }
+        .badge-inflamable { background: #fd7e14; }
+        .badge-toxico { background: #6f42c1; }
+        .badge-nocivo { background: #ffc107; color: #333; }
+        .badge-salud { background: #00a9e0; }
+        .badge-no-clasificado { background: #6c757d; }
+        .badge-reactivo { background: #dc3545; }
+
+        /* Tabla de compatibilidad */
+        .compat-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .compat-table th {
+            background: #00a9e0;
+            color: white;
+            padding: 0.8rem;
+            text-align: center;
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .compat-table td {
+            padding: 0.6rem;
+            text-align: center;
+            border: 1px solid #dee2e6;
+        }
+
+        .compat-table td:first-child {
+            font-weight: bold;
+            background: #f8f9fa;
+            text-align: left;
+            position: sticky;
+            left: 0;
+            z-index: 5;
+        }
+
+        .compatible { background: #d4edda; }
+        .incompatible { background: #f8d7da; }
+        .precaucion { background: #fff3cd; }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-top: 5px solid #00a9e0;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #e3f2fd;
+            padding-bottom: 1rem;
+        }
+
+        .modal-header h2 {
+            color: #00a9e0;
+        }
+
+        .close-btn {
+            font-size: 2rem;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close-btn:hover {
+            color: #00a9e0;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .detail-item {
+            padding: 0.5rem;
+            border-bottom: 1px solid #e3f2fd;
+        }
+
+        .detail-label {
+            font-weight: bold;
+            color: #00a9e0;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .section-title {
+                font-size: 1.2rem;
+            }
+            
+            .nav-menu {
+                justify-content: center;
+            }
+            
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .resiter-badge {
+            background: #00a9e0;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .mobile-warning {
+            background: #fff3cd;
+            color: #856404;
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            text-align: center;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-warning {
+                display: block;
+            }
+        }
+
+        .search-box {
+            margin-bottom: 1.5rem;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 2px solid #e3f2fd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #00a9e0;
+        }
+
+        .qr-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 2rem 0;
+            padding: 2rem;
+            background: #f5fbff;
+            border-radius: 10px;
+        }
+
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            margin: 1rem 0;
+        }
+
+        .qr-code img {
+            width: 100%;
+            height: 100%;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #00a9e0 0%, #0095c7 100%);
+            color: white;
+            padding: 1.2rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-circle">R</div>
+                <div>
+                    <div class="company-name">RESITER</div>
+                    <div class="app-name">Gestor Hojas de Seguridad PPL</div>
+                </div>
+            </div>
+            <ul class="nav-menu">
+                <li><a onclick="showSection('materiales', this)" class="active">📋 Productos</a></li>
+                <li><a onclick="showSection('compatibilidad', this)">🔄 Compatibilidad</a></li>
+                <li><a onclick="showSection('tutorial', this)">📚 Tutorial</a></li>
+                <li><a onclick="showQR()">📲 Compartir</a></li>
+                <li><a onclick="showStats()">📊 Estadísticas</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <!-- SECCIÓN PRODUCTOS -->
+        <div id="materiales" class="section active">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span>📋</span>
+                    Productos Químicos PPL
+                </h2>
+                <span class="resiter-badge">Total: <span id="totalCount">0</span></span>
+            </div>
+
+            <div class="mobile-warning">
+                👆 Desliza la tabla horizontalmente para ver más información
+            </div>
+
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 Buscar por nombre, tipo o fabricante..." onkeyup="searchProducts()">
+            </div>
+
+            <div class="table-container">
+                <table class="material-table">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Nombre</th>
+                            <th>Fabricante</th>
+                            <th>Peligrosidad</th>
+                            <th>Nivel</th>
+                            <th>Revisión</th>
+                            <th>Hoja SDS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productTable">
+                        <!-- Se llenará con JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SECCIÓN COMPATIBILIDAD -->
+        <div id="compatibilidad" class="section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span>🔄</span>
+                    Matriz de Compatibilidad
+                </h2>
+            </div>
+
+            <div class="stats-container" style="grid-template-columns: repeat(3,1fr);">
+                <div style="background: #d4edda; padding: 1rem; border-radius: 10px; text-align: center;">
+                    <h3>✅ Compatible</h3>
+                    <p style="font-size:0.9rem;">Almacenamiento conjunto permitido</p>
+                </div>
+                <div style="background: #f8d7da; padding: 1rem; border-radius: 10px; text-align: center;">
+                    <h3>❌ Incompatible</h3>
+                    <p style="font-size:0.9rem;">NO almacenar juntos</p>
+                </div>
+                <div style="background: #fff3cd; padding: 1rem; border-radius: 10px; text-align: center;">
+                    <h3>⚠️ Precaución</h3>
+                    <p style="font-size:0.9rem;">Evaluar condiciones</p>
+                </div>
+            </div>
+
+            <h3 style="margin: 2rem 0 1rem; color: #00a9e0;">🔍 Verificar Compatibilidad entre dos Productos</h3>
+            
+            <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; background: #f5fbff; padding: 1.5rem; border-radius: 10px; margin: 1.5rem 0;">
+                <select id="producto1" style="flex: 1; min-width: 250px; padding: 0.8rem; border: 2px solid #e3f2fd; border-radius: 8px;">
+                    <option value="">Seleccionar producto 1</option>
+                </select>
+                <span style="font-size: 1.5rem;">↔️</span>
+                <select id="producto2" style="flex: 1; min-width: 250px; padding: 0.8rem; border: 2px solid #e3f2fd; border-radius: 8px;">
+                    <option value="">Seleccionar producto 2</option>
+                </select>
+                <button class="btn" onclick="verificarCompatibilidad()">Verificar</button>
+            </div>
+
+            <div id="compatResult" style="display: none; padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem;"></div>
+
+            <h3 style="margin: 2rem 0 1rem; color: #00a9e0;">📊 Matriz Completa de Compatibilidad</h3>
+            <div class="table-container">
+                <table class="compat-table" id="matrizCompleta">
+                    <!-- Se generará dinámicamente -->
+                </table>
+            </div>
+        </div>
+
+        <!-- SECCIÓN TUTORIAL -->
+        <div id="tutorial" class="section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span>📚</span>
+                    Tutorial: Tabla de Compatibilidad
+                </h2>
+            </div>
+
+            <div style="background: #f5fbff; padding: 1.5rem; border-radius: 15px; margin-bottom: 2rem;">
+                <h3 style="color: #00a9e0; margin-bottom: 1rem;">🎯 ¿Cómo usar esta aplicación?</h3>
+                <p style="line-height: 1.6;">Esta aplicación te permite gestionar las hojas de seguridad de productos químicos y determinar si pueden almacenarse juntos de forma segura.</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 15px; border-left: 4px solid #00a9e0;">
+                    <h3 style="color: #00a9e0; margin-bottom: 1rem;">1️⃣ Lista de Productos</h3>
+                    <p>Muestra todos los productos con su información clave y enlaces directos a las hojas SDS en la nube.</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 15px; border-left: 4px solid #00a9e0;">
+                    <h3 style="color: #00a9e0; margin-bottom: 1rem;">2️⃣ Niveles de Riesgo</h3>
+                    <p><span style="background: #28a745; color: white; padding: 0.2rem 0.5rem; border-radius: 4px;">BAJO</span> Productos de bajo riesgo</p>
+                    <p><span style="background: #ffc107; padding: 0.2rem 0.5rem; border-radius: 4px;">MEDIO</span> Requieren cuidado</p>
+                    <p><span style="background: #dc3545; color: white; padding: 0.2rem 0.5rem; border-radius: 4px;">ALTO</span> Manejo especializado</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 15px; border-left: 4px solid #00a9e0;">
+                    <h3 style="color: #00a9e0; margin-bottom: 1rem;">3️⃣ Código de Colores</h3>
+                    <p><span style="background: #d4edda; padding: 2px 8px; border-radius: 4px;">✅ Compatible</span> - Almacenamiento permitido</p>
+                    <p><span style="background: #f8d7da; padding: 2px 8px; border-radius: 4px;">❌ Incompatible</span> - No almacenar juntos</p>
+                    <p><span style="background: #fff3cd; padding: 2px 8px; border-radius: 4px;">⚠️ Precaución</span> - Evaluar condiciones</p>
+                </div>
+            </div>
+
+            <div style="background: #f8d7da; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #dc3545;">
+                <h3 style="color: #721c24; margin-bottom: 1rem;">⚠️ ADVERTENCIA DE SEGURIDAD</h3>
+                <p style="color: #721c24;">Esta tabla es una guía general. Siempre consulte las hojas de seguridad específicas (SDS) de cada producto antes de almacenarlos juntos. En caso de duda, asuma incompatibilidad y almacene por separado.</p>
+            </div>
+        </div>
+
+        <!-- MODAL QR -->
+        <div id="qrModal" class="modal">
+            <div class="modal-content" style="max-width: 500px; text-align: center;">
+                <div class="modal-header">
+                    <h2>📲 Compartir App</h2>
+                    <span class="close-btn" onclick="closeQRModal()">&times;</span>
+                </div>
+                <div class="qr-container">
+                    <div id="qrCode" class="qr-code">
+                        <!-- Aquí se generará el QR -->
+                    </div>
+                    <p style="margin: 1rem 0; color: #666;">Escanea este código QR para acceder a la aplicación desde cualquier dispositivo.</p>
+                    <p style="font-size: 0.9rem; background: #f5fbff; padding: 1rem; border-radius: 5px; word-break: break-all;" id="appUrl"></p>
+                    <button class="btn" onclick="copiarURL()" style="margin-top: 1rem;">📋 Copiar URL</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL ESTADÍSTICAS -->
+        <div id="statsModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>📊 Estadísticas</h2>
+                    <span class="close-btn" onclick="closeStatsModal()">&times;</span>
+                </div>
+                <div id="statsContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p><span style="color: #00a9e0; font-weight: bold;">RESITER</span> - Gestor de Hojas de Seguridad PPL v4.0</p>
+        <p style="font-size: 0.8rem;">27 productos químicos con hojas SDS en la nube</p>
+    </div>
+
+    <script>
+        // =============================================
+        // DATOS DE PRODUCTOS (con enlaces directos a PDF)
+        // =============================================
+        const productos = [
+            {
+                tipo: "INSUMO DE LIMPIEZA",
+                nombre: "Quick Scent Toilet Deodorizing Sachets",
+                fabricante: "SATELLITE",
+                peligrosidad: ["CORROSIVO", "NOCIVO", "PELIGRO PARA LA SALUD"],
+                nivel: "BAJO",
+                revision: "2024-08-04",
+                pdf: "https://resitercorp-my.sharepoint.com/personal/lfranco_resiter_pe/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL%2F01%2E%20Satellite%20%2D%20Quickscents%20toilet%20deodorizing%20sachets%2Epdf&parent=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL&ga=1"
+            },
+            {
+                tipo: "INSUMO DE LIMPIEZA",
+                nombre: "Jabón Líquido Desinfectante CLEER",
+                fabricante: "CLEER",
+                peligrosidad: ["NO CLASIFICADO"],
+                nivel: "BAJO",
+                revision: "2024-12-21",
+                pdf: "https://resitercorp-my.sharepoint.com/personal/lfranco_resiter_pe/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL%2F02%2E%20Cleer%20%2D%20Jab%C3%B3n%20l%C3%ADquido%20desinfectante%2Epdf&parent=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL&ga=1"
+            },
+            {
+                tipo: "INSUMO DE LIMPIEZA",
+                nombre: "Jabón Líquido de Manos",
+                fabricante: "DARYZA",
+                peligrosidad: ["NO CLASIFICADO"],
+                nivel: "BAJO",
+                revision: "2024-05-05",
+                pdf: "https://resitercorp-my.sharepoint.com/:b:/g/personal/lfranco_resiter_pe/IQBbbW-bB02MSZMkcmU_KN37AdCLZ2pC5njmEGN0MD0tmvw?e=9K5gh1"
+            },
+            {
+                tipo: "INSUMO DE LIMPIEZA",
+                nombre: "Perfumador",
+                fabricante: "DARYZA",
+                peligrosidad: ["NO CLASIFICADO"],
+                nivel: "BAJO",
+                revision: "2024-02-21",
+                pdf: "https://resitercorp-my.sharepoint.com/personal/lfranco_resiter_pe/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL%2F04%2E%20Daryza%20%2D%20Perfumador%2Epdf&parent=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL&ga=1"
+            },
+            {
+                tipo: "INSUMO DE MANTENIMIENTO DE VEHICULOS",
+                nombre: "Producto en aerosol multiuso WD-40",
+                fabricante: "WD-40",
+                peligrosidad: ["INFLAMABLE", "PELIGRO PARA LA SALUD", "NOCIVO"],
+                nivel: "MEDIO",
+                revision: "2024-10-25",
+                pdf: "https://resitercorp-my.sharepoint.com/personal/lfranco_resiter_pe/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL%2F05%2E%20WD%2D40%20%2D%20Producto%20en%20aerosol%20multiuso%20WD%2D40%2Epdf&parent=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL&ga=1"
+            },
+            {
+                tipo: "INSUMO DE MANTENIMIENTO DE VEHICULOS",
+                nombre: "Grasa EP Multipropósito",
+                fabricante: "VISTONY",
+                peligrosidad: ["NO CLASIFICADO"],
+                nivel: "BAJO",
+                revision: "2024-04-01",
+                pdf: "https://resitercorp-my.sharepoint.com/personal/lfranco_resiter_pe/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL%2F06%2E%20Grasa%2DEp%2D2%2DLithium%2DMultiproposito%2DVistony%2Epdf&parent=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL&ga=1"
+            },
+            {
+                tipo: "INSUMO DE MANTENIMIENTO DE VEHICULOS",
+                nombre: "Aceite hidráulico (DRAULA H)",
+                fabricante: "FLEETRITE",
+                peligrosidad: ["NO CLASIFICADO"],
+                nivel: "BAJO",
+                revision: "2024-05-01",
+                pdf: "https://resitercorp-my.sharepoint.com/personal/lfranco_resiter_pe/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL%2F07%2DHS%5FDRAULA%2DH%2DISO%2068%2Epdf&parent=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL&ga=1"
+            },
+            {
+                tipo: "INSUMO DE MANTENIMIENTO DE VEHICULOS",
+                nombre: "Grasa White Lithium Grease",
+                fabricante: "VISTONY",
+                peligrosidad: ["INFLAMABLE", "NOCIVO", "PELIGRO PARA LA SALUD"],
+                nivel: "ALTO",
+                revision: "2024-11-10",
+                pdf: "https://resitercorp-my.sharepoint.com/:b:/g/personal/lfranco_resiter_pe/IQAkN-x2m3cIQq6dHnL6K5YoAePKzpuK5tbac3v64HgUObg?e=QSBzXu"
+            },
+            {
+                tipo: "INSUMO DE MANTENIMIENTO DE VEHICULOS",
+                nombre: "Mobil - Delvac - Mx 15w40",
+                fabricante: "EXXONMOBIL",
+                peligrosidad: ["NO CLASIFICADO"],
+                nivel: "BAJO",
+                revision: "2024-04-12",
+                pdf: "https://resitercorp-my.sharepoint.com/:b:/g/personal/lfranco_resiter_pe/IQCSszqAeehKT4PilrBMKcMvATJpCvgt1arftCwwlzUdb3M?e=xqrlBJ"
+            },
+            {
+                tipo: "INSUMO DE MANTENIMIENTO DE VEHICULOS",
+                nombre: "Pintura en Spray",
+                fabricante: "KNAUF",
+                peligrosidad: ["INFLAMABLE", "NOCIVO", "PELIGRO PARA LA SALUD"],
+                nivel: "ALTO",
+                revision: "2024-06-10",
+                pdf: "https://resitercorp-my.sharepoint.com/:b:/g/personal/lfranco_resiter_pe/IQCOlaond8ToSJvq9YSOODBoAf5RgfrhCm_BZGQfG2CU3FU?e=Aa7FQA"
+            },
+            {
+                tipo: "INSUMO DE MANTENIMIENTO DE VEHICULOS",
+                nombre: "Hydrofluid Special AW 46",
+                fabricante: "CAM 2",
+                peligrosidad: ["NO CLASIFICADO"],
+                nivel: "BAJO",
+                revision: "2025-02-10",
+                pdf: "https://resitercorp-my.sharepoint.com/:b:/g/personal/lfranco_resiter_pe/IQC04HykciexQIMu5J0lieCLAVZCBzANvQ_5xa6tufUancs?e=lJIHDB"
+            },
+            {
+                tipo: "INSUMO DE MANTENIMIENTO DE SUPERFICIES",
+                nombre: "Gloss Poliuretano Catalizado X3.",
+                fabricante: "ANYPSA",
+                peligrosidad: ["INFLAMABLE", "NOCIVO", "PELIGRO PARA LA SALUD"],
+                nivel: "MEDIO",
+                revision: "2023-11-02",
+                pdf: "https://resitercorp-my.sharepoint.com/:b:/g/personal/lfranco_resiter_pe/IQAtKnIN-ed9T4-4CTfQINYCASCcsUdmkAiFSJkZnrLJSQc?e=DAHLXR"
+            },
+            {
+                tipo: "INSUMO DE MANTENIMIENTO DE SUPERFICIES",
+                nombre: "Base zincromato 3T Amazon",
+                fabricante: "ANYPSA",
+                peligrosidad: ["INFLAMABLE", "NOCIVO", "PELIGRO PARA LA SALUD"],
+                nivel: "MEDIO",
+                revision: "2023-11-02",
+                pdf: "https://resitercorp-my.sharepoint.com/personal/lfranco_resiter_pe/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL%2F13%2ESDS%20BASE%5FZINCROMATO%20verde%2Epdf&parent=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL&ga=1"
+            },
+            {
+                tipo: "INSUMO DE MANTENIMIENTO DE SUPERFICIES",
+                nombre: "Esmalte Sintético 3T.(Color:Rojo Berbellon)",
+                fabricante: "ANYPSA",
+                peligrosidad: ["INFLAMABLE", "NOCIVO", "PELIGRO PARA LA SALUD"],
+                nivel: "MEDIO",
+                revision: "2023-11-02",
+                pdf: "https://resitercorp-my.sharepoint.com/personal/lfranco_resiter_pe/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL%2F14%2E%20SDS%20%2DESMALTE%5FSINTETICO%5FRojo%20Berbellon%2Epdf&parent=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL&ga=1"
+            },
+            {
+                tipo: "INSUMO DE MANTENIMIENTO DE SUPERFICIES",
+                nombre: "Esmalte Sintético (color:Ámbar blanco lechoso)",
+                fabricante: "ANYPSA",
+                peligrosidad: ["INFLAMABLE", "NOCIVO", "PELIGRO PARA LA SALUD"],
+                nivel: "MEDIO",
+                revision: "2023-11-02",
+                pdf: "https://resitercorp-my.sharepoint.com/:b:/g/personal/lfranco_resiter_pe/IQAfQWdcH6uXQZuGOrkJI8wuAaGaA3JxisR7OvotheEhQz0?e=1Uk8IN"
+            },
+            {
+                tipo: "INSUMO DE MANTENIMIENTO DE SUPERFICIES",
+                nombre: "Disolvente Epóxico",
+                fabricante: "ANYPSA",
+                peligrosidad: ["INFLAMABLE", "NOCIVO", "PELIGRO PARA LA SALUD"],
+                nivel: "ALTO",
+                revision: "2023-11-02",
+                pdf: "https://resitercorp-my.sharepoint.com/personal/lfranco_resiter_pe/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL%2F16%2E%20DISOLVENTE%5FEPOXICO%2DRECUBRIMIENTOS%5FINDUSTRIALES%5FY%5FMARINOS%5F%20Disolvente%20Anypsa%2Epdf&parent=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL&ga=1"
+            },
+            {
+                tipo: "INSUMO DE LIMPIEZA",
+                nombre: "Quitasarro",
+                fabricante: "DARYZA",
+                peligrosidad: ["CORROSIVO", "REACTIVO"],
+                nivel: "ALTO",
+                revision: "2023-06-31",
+                pdf: "https://resitercorp-my.sharepoint.com/personal/lfranco_resiter_pe/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL%2F17%2E%20Saca%20Sarro%20Daryza%2Epdf&parent=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL&ga=1"
+            },
+            {
+                tipo: "INSUMO DE MANTENIMIENTO DE VEHICULOS",
+                nombre: "WD-40",
+                fabricante: "WD-40 Company",
+                peligrosidad: ["INFLAMABLE", "NOCIVO", "PELIGRO PARA LA SALUD"],
+                nivel: "MEDIO",
+                revision: "2024-05-21",
+                pdf: "https://resitercorp-my.sharepoint.com/personal/lfranco_resiter_pe/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL%2F18%2E%20WD%2D40%2DMulti%2DUso%2Epdf&parent=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL&ga=1"
+            },
+            {
+                tipo: "INSUMO DE MANTENIMIENTO DE VEHICULOS",
+                nombre: "LGMT 2",
+                fabricante: "SKF",
+                peligrosidad: ["NOCIVO"],
+                nivel: "MEDIO",
+                revision: "2025-04-07",
+                pdf: "https://resitercorp-my.sharepoint.com/:b:/g/personal/lfranco_resiter_pe/IQDv5xlCeMcoTLKeFIVll5_kAUAo_l7pQaSZkIA7PaeXNQ0?e=girQc4"
+            },
+            {
+                tipo: "INSUMO DE MANTENIMIENTO DE VEHICULOS",
+                nombre: "FORMADOR DE EMPAQUETADURA",
+                fabricante: "NOVAQUIMICA",
+                peligrosidad: ["INFLAMABLE", "NOCIVO", "PELIGRO PARA LA SALUD"],
+                nivel: "ALTO",
+                revision: "2024-01-20",
+                pdf: "https://resitercorp-my.sharepoint.com/personal/lfranco_resiter_pe/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL%2F20%2E%20Formador%20de%20empaquetadura%2Epdf&parent=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL&ga=1"
+            },
+            {
+                tipo: "INSUMO DE MANTENIMIENTO DE SUPERFICIES",
+                nombre: "EVERGREEN ELITE",
+                fabricante: "J&J",
+                peligrosidad: ["CORROSIVO"],
+                nivel: "MEDIO",
+                revision: "2025-01-01",
+                pdf: "https://resitercorp-my.sharepoint.com/personal/lfranco_resiter_pe/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL%2F21%2E%20MSDS%20Evergreen%20Elite%20Packet%20Spanish%20MSDS%2Epdf&parent=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL&ga=1"
+            },
+            {
+                tipo: "INSECTICIDA AEROSOL",
+                nombre: "MATA TERMITAS",
+                fabricante: "ALICORP",
+                peligrosidad: ["INFLAMABLE", "PELIGRO PARA LA SALUD", "NOCIVO"],
+                nivel: "ALTO",
+                revision: "2023-05-05",
+                pdf: "https://resitercorp-my.sharepoint.com/:b:/g/personal/lfranco_resiter_pe/IQDWZELd2RZdS4ngIQKq_SsFAWJx22z_6KHFLT1p5YEf4zs?e=5Q8zXR"
+            },
+            {
+                tipo: "INSUMO DE MANTENIMIENTO DE SUPERFICIES",
+                nombre: "BONN DILU D820 NF",
+                fabricante: "BONN",
+                peligrosidad: ["INFLAMABLE", "PELIGRO PARA LA SALUD", "NOCIVO"],
+                nivel: "ALTO",
+                revision: "2025-02-04",
+                pdf: "https://resitercorp-my.sharepoint.com/:b:/g/personal/lfranco_resiter_pe/IQDD83iP0zggRamheCmPe9EXAQodyTix528Mq-TBgnp9_Z0?e=g3fV7g"
+            },
+            {
+                tipo: "INSUMO DE MANTENIMIENTO DE VEHICULOS",
+                nombre: "LIQUIDO LIMPIA PARABRISAS",
+                fabricante: "VISTONY",
+                peligrosidad: ["INFLAMABLE", "BAJO"],
+                nivel: "BAJO",
+                revision: "2025-08-01",
+                pdf: "https://resitercorp-my.sharepoint.com/:b:/g/personal/lfranco_resiter_pe/IQBVF4_a9a07QrTSgm0KXsInAffrBBtAaPAF3dyxaAocCdQ?e=U2FeMP"
+            },
+            {
+                tipo: "INSUMO DE MANTENIMIENTO DE SUPERFICIES",
+                nombre: "ESMALTE EPÓXICO TITÁNIC-BRILLANTE",
+                fabricante: "ANYPSA",
+                peligrosidad: ["INFLAMBLE", "PELGIRO PARA LA SALUD"],
+                nivel: "MEDIO",
+                revision: "2025-01-02",
+                pdf: "https://resitercorp-my.sharepoint.com/:b:/g/personal/lfranco_resiter_pe/IQBgFEaSwjbiR41w13Koj_kCAUBbFr8bs_H2Z0pTYABmx_8?e=48QiTI"
+            },
+            {
+                tipo: "INSUMO DE MANTENIMIENTO DE SUPERFICIES",
+                nombre: "LÁTEX SUPERIOR MASTERLAST -MATE",
+                fabricante: "ANYPSA",
+                peligrosidad: ["NOCIVO"],
+                nivel: "BAJO",
+                revision: "2025-01-02",
+                pdf: "https://resitercorp-my.sharepoint.com/personal/lfranco_resiter_pe/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL%2F26%2E%20LATEX%5FMAESTRO%5FSUPERIOR%2Epdf&parent=%2Fpersonal%2Flfranco%5Fresiter%5Fpe%2FDocuments%2FANTAMINA%2FHSE%202026%2FHSEQ%2D2026%2F06%2E%20CONTROL%20OPERACIONAL%2F30%2E%20Prod%20Quimico%20MSDS%2F03%2E%20PPL&ga=1"
+            },
+            {
+                tipo: "INSUMO PARA TRATAMIENTO DE RRSS ORGÁNICOS",
+                nombre: "BIOFLASH",
+                fabricante: "C3K Waste Management Consulting S.A.C.",
+                peligrosidad: ["NO CLASIFICADO"],
+                nivel: "BAJO",
+                revision: "-",
+                pdf: "https://resitercorp-my.sharepoint.com/:b:/g/personal/lfranco_resiter_pe/IQBWVFebVWaLRbzI9aaLJrIwAVfDLMNlihgFYtCrcH2F2Gk?e=ifkj1H"
+            }
+        ];
+
+        // =============================================
+        // FUNCIONES DE LA APLICACIÓN
+        // =============================================
+
+        // Mostrar sección activa
+        function showSection(sectionId, element) {
+            document.querySelectorAll('.nav-menu a').forEach(a => a.classList.remove('active'));
+            element.classList.add('active');
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            
+            if (sectionId === 'compatibilidad') {
+                cargarSelectoresProductos();
+                generarMatrizCompleta();
+            }
+        }
+
+        // Inicializar tabla de productos
+        function initProductTable() {
+            const tbody = document.getElementById('productTable');
+            updateTotalCount();
+            
+            tbody.innerHTML = productos.map(p => {
+                const peligrosidadHTML = p.peligrosidad.map(pel => {
+                    const clase = getPeligrosidadClass(pel);
+                    return `<span class="badge ${clase}">${pel}</span>`;
+                }).join(' ');
+
+                return `
+                <tr>
+                    <td>${p.tipo}</td>
+                    <td><strong>${p.nombre}</strong></td>
+                    <td>${p.fabricante}</td>
+                    <td>${peligrosidadHTML}</td>
+                    <td><span style="background: ${getNivelColor(p.nivel)}; color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.75rem;">${p.nivel}</span></td>
+                    <td>${formatDate(p.revision)}</td>
+                    <td>
+                        <a href="${p.pdf}" target="_blank" class="btn-pdf" title="Abrir hoja de seguridad">
+                            📄 Ver PDF
+                        </a>
+                    </td>
+                </tr>
+            `}).join('');
+        }
+
+        // Obtener clase CSS para peligrosidad
+        function getPeligrosidadClass(pel) {
+            const map = {
+                'CORROSIVO': 'badge-corrosivo',
+                'INFLAMABLE': 'badge-inflamable',
+                'TÓXICO': 'badge-toxico',
+                'NOCIVO': 'badge-nocivo',
+                'PELIGRO PARA LA SALUD': 'badge-salud',
+                'NO CLASIFICADO': 'badge-no-clasificado',
+                'REACTIVO': 'badge-corrosivo',
+                'INFLAMBLE': 'badge-inflamable',
+                'PELGIRO PARA LA SALUD': 'badge-salud'
+            };
+            return map[pel] || 'badge-no-clasificado';
+        }
+
+        // Obtener color según nivel
+        function getNivelColor(nivel) {
+            switch(nivel) {
+                case 'BAJO': return '#28a745';
+                case 'MEDIO': return '#ffc107';
+                case 'ALTO': return '#dc3545';
+                default: return '#6c757d';
+            }
+        }
+
+        // Formatear fecha
+        function formatDate(date) {
+            if (!date || date === '-') return date;
+            return date;
+        }
+
+        // Actualizar contador total
+        function updateTotalCount() {
+            document.getElementById('totalCount').textContent = productos.length;
+        }
+
+        // Búsqueda de productos
+        function searchProducts() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            const filtered = productos.filter(p => 
+                p.nombre.toLowerCase().includes(searchTerm) ||
+                p.tipo.toLowerCase().includes(searchTerm) ||
+                p.fabricante.toLowerCase().includes(searchTerm) ||
+                p.peligrosidad.some(pel => pel.toLowerCase().includes(searchTerm))
+            );
+
+            const tbody = document.getElementById('productTable');
+            tbody.innerHTML = filtered.map(p => {
+                const peligrosidadHTML = p.peligrosidad.map(pel => {
+                    const clase = getPeligrosidadClass(pel);
+                    return `<span class="badge ${clase}">${pel}</span>`;
+                }).join(' ');
+
+                return `
+                <tr>
+                    <td>${p.tipo}</td>
+                    <td><strong>${p.nombre}</strong></td>
+                    <td>${p.fabricante}</td>
+                    <td>${peligrosidadHTML}</td>
+                    <td><span style="background: ${getNivelColor(p.nivel)}; color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.75rem;">${p.nivel}</span></td>
+                    <td>${formatDate(p.revision)}</td>
+                    <td>
+                        <a href="${p.pdf}" target="_blank" class="btn-pdf">
+                            📄 Ver PDF
+                        </a>
+                    </td>
+                </tr>
+            `}).join('');
+        }
+
+        // Cargar selectores de productos
+        function cargarSelectoresProductos() {
+            const select1 = document.getElementById('producto1');
+            const select2 = document.getElementById('producto2');
+            
+            const options = productos.map((p, index) => 
+                `<option value="${index}">${p.nombre} (${p.nivel})</option>`
+            ).join('');
+            
+            select1.innerHTML = '<option value="">Seleccionar producto 1</option>' + options;
+            select2.innerHTML = '<option value="">Seleccionar producto 2</option>' + options;
+        }
+
+        // Verificar compatibilidad
+        function verificarCompatibilidad() {
+            const index1 = document.getElementById('producto1').value;
+            const index2 = document.getElementById('producto2').value;
+            
+            if (!index1 || !index2) {
+                alert('Seleccione ambos productos');
+                return;
+            }
+
+            const p1 = productos[index1];
+            const p2 = productos[index2];
+
+            const resultado = determinarCompatibilidad(p1, p2);
+            
+            const resultDiv = document.getElementById('compatResult');
+            resultDiv.style.display = 'block';
+            resultDiv.style.background = resultado.color;
+            resultDiv.innerHTML = `
+                <h3 style="margin-bottom: 1rem;">${resultado.simbolo} ${resultado.texto}</h3>
+                <p><strong>${p1.nombre}</strong> (${p1.nivel}) ↔️ <strong>${p2.nombre}</strong> (${p2.nivel})</p>
+                <p style="margin-top: 1rem;">${resultado.mensaje}</p>
+            `;
+        }
+
+        // Determinar compatibilidad
+        function determinarCompatibilidad(p1, p2) {
+            const altoRiesgo = ['CORROSIVO', 'INFLAMABLE', 'REACTIVO', 'TÓXICO'];
+            
+            const peligros1 = p1.peligrosidad.map(p => p.toUpperCase());
+            const peligros2 = p2.peligrosidad.map(p => p.toUpperCase());
+            
+            const tieneAltoRiesgo1 = peligros1.some(p => altoRiesgo.includes(p));
+            const tieneAltoRiesgo2 = peligros2.some(p => altoRiesgo.includes(p));
+
+            if (p1.nivel === 'ALTO' && p2.nivel === 'ALTO') {
+                return {
+                    simbolo: '⚠️',
+                    texto: 'PRECAUCIÓN',
+                    color: '#fff3cd',
+                    mensaje: 'Ambos productos son de nivel ALTO. Evaluar condiciones específicas de almacenamiento.'
+                };
+            }
+            
+            if (tieneAltoRiesgo1 && tieneAltoRiesgo2) {
+                return {
+                    simbolo: '❌',
+                    texto: 'INCOMPATIBLE',
+                    color: '#f8d7da',
+                    mensaje: 'NO almacenar juntos. Ambos tienen características de alto riesgo que pueden reaccionar.'
+                };
+            }
+            
+            if (p1.nivel === 'ALTO' || p2.nivel === 'ALTO') {
+                return {
+                    simbolo: '⚠️',
+                    texto: 'PRECAUCIÓN',
+                    color: '#fff3cd',
+                    mensaje: 'Un producto es de nivel ALTO. Se recomienda almacenamiento separado.'
+                };
+            }
+            
+            return {
+                simbolo: '✅',
+                texto: 'COMPATIBLE',
+                color: '#d4edda',
+                mensaje: 'Productos compatibles para almacenamiento conjunto.'
+            };
+        }
+
+        // Generar matriz completa
+        function generarMatrizCompleta() {
+            const tabla = document.getElementById('matrizCompleta');
+            
+            let html = '<thead><tr><th>Producto</th>';
+            productos.forEach(p => {
+                let nombreCorto = p.nombre.length > 20 ? p.nombre.substring(0, 18) + '...' : p.nombre;
+                html += `<th title="${p.nombre}">${nombreCorto}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+
+            productos.forEach((p1, i) => {
+                html += '<tr>';
+                html += `<td title="${p1.nombre}"><strong>${p1.nombre.substring(0, 25)}...</strong></td>`;
+                
+                productos.forEach((p2, j) => {
+                    if (i === j) {
+                        html += '<td style="background: #e9ecef; text-align: center;">⚡</td>';
+                    } else {
+                        const resultado = determinarCompatibilidad(p1, p2);
+                        html += `<td style="background: ${resultado.color}; text-align: center;" title="${resultado.mensaje}">${resultado.simbolo}</td>`;
+                    }
+                });
+                html += '</tr>';
+            });
+            
+            html += '</tbody>';
+            tabla.innerHTML = html;
+        }
+
+        // Funciones para QR
+        function showQR() {
+            const modal = document.getElementById('qrModal');
+            const urlActual = window.location.href;
+            
+            document.getElementById('appUrl').textContent = urlActual || 'URL de la aplicación';
+            
+            const qrContainer = document.getElementById('qrCode');
+            qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(urlActual)}" alt="QR Code">`;
+            
+            modal.classList.add('active');
+        }
+
+        function closeQRModal() {
+            document.getElementById('qrModal').classList.remove('active');
+        }
+
+        function copiarURL() {
+            const url = document.getElementById('appUrl').textContent;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('URL copiada al portapapeles');
+            }).catch(() => {
+                alert('Error al copiar');
+            });
+        }
+
+        // Mostrar estadísticas
+        function showStats() {
+            const statsModal = document.getElementById('statsModal');
+            const statsContent = document.getElementById('statsContent');
+
+            const total = productos.length;
+            
+            const porNivel = productos.reduce((acc, p) => {
+                acc[p.nivel] = (acc[p.nivel] || 0) + 1;
+                return acc;
+            }, {});
+
+            const porPeligrosidad = productos.reduce((acc, p) => {
+                p.peligrosidad.forEach(pel => {
+                    acc[pel] = (acc[pel] || 0) + 1;
+                });
+                return acc;
+            }, {});
+
+            const porTipo = productos.reduce((acc, p) => {
+                acc[p.tipo] = (acc[p.tipo] || 0) + 1;
+                return acc;
+            }, {});
+
+            statsContent.innerHTML = `
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-number">${total}</div>
+                        <div class="stat-label">Total Productos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${productos.filter(p => p.pdf).length}</div>
+                        <div class="stat-label">Hojas SDS</div>
+                    </div>
+                </div>
+                
+                <h3 style="color:#00a9e0; margin: 1.5rem 0 1rem;">📊 Por Nivel de Riesgo</h3>
+                <div style="background:#f5fbff; padding:1rem; border-radius:10px;">
+                    <p><span style="background:#28a745; color:white; padding:0.2rem 0.5rem; border-radius:4px;">BAJO</span>: ${porNivel['BAJO'] || 0}</p>
+                    <p><span style="background:#ffc107; padding:0.2rem 0.5rem; border-radius:4px;">MEDIO</span>: ${porNivel['MEDIO'] || 0}</p>
+                    <p><span style="background:#dc3545; color:white; padding:0.2rem 0.5rem; border-radius:4px;">ALTO</span>: ${porNivel['ALTO'] || 0}</p>
+                </div>
+
+                <h3 style="color:#00a9e0; margin: 1.5rem 0 1rem;">🏷️ Por Tipo</h3>
+                <div style="background:#f5fbff; padding:1rem; border-radius:10px;">
+                    ${Object.entries(porTipo).map(([tipo, count]) => 
+                        `<p><span class="resiter-badge">${tipo}</span>: ${count}</p>`
+                    ).join('')}
+                </div>
+
+                <h3 style="color:#00a9e0; margin: 1.5rem 0 1rem;">⚠️ Peligrosidades más comunes</h3>
+                <div style="background:#f5fbff; padding:1rem; border-radius:10px;">
+                    ${Object.entries(porPeligrosidad).sort((a,b) => b[1] - a[1]).map(([pel, count]) => 
+                        `<p><span class="badge ${getPeligrosidadClass(pel)}">${pel}</span>: ${count}</p>`
+                    ).join('')}
+                </div>
+            `;
+
+            statsModal.classList.add('active');
+        }
+
+        function closeStatsModal() {
+            document.getElementById('statsModal').classList.remove('active');
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', () => {
+            initProductTable();
+            cargarSelectoresProductos();
+            generarMatrizCompleta();
+        });
+    </script>
+</body>
+</html>
